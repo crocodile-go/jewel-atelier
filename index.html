@@ -3,142 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Jewel Atelier Pro</title>
+    <title>Jewel Atelier - Executive -</title>
     <style>
         :root { --gold: #d4af37; --bg: #050505; --panel: #111; --diamond: #ffffff; }
         * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
         body { background: var(--bg); color: #e0e0e0; font-family: "Georgia", serif; margin: 0; overflow: hidden; height: 100vh; }
         
-        /* 共通レイアウト */
-        .screen { display: none; flex-direction: column; align-items: center; width: 100%; height: calc(100vh - 85px); position: relative; padding-top: 40px; text-align: center; }
-        .active { display: flex; animation: fadeIn 0.8s ease; }
+        .screen { display: none; flex-direction: column; align-items: center; width: 100%; height: calc(100vh - 85px); padding-top: 40px; text-align: center; }
+        .active { display: flex; animation: fadeIn 0.5s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        h2 { font-size: 14px; color: var(--gold); letter-spacing: 5px; margin-bottom: 30px; font-weight: normal; }
+        h2 { font-size: 14px; color: var(--gold); letter-spacing: 5px; margin-bottom: 20px; font-weight: normal; }
 
-        /* ホーム：アトリエUI */
-        .main-display { width: 220px; height: 300px; border: 1px solid rgba(212,175,55,0.3); border-radius: 110px 110px 10px 10px; position: relative; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at center, rgba(212,175,55,0.1) 0%, transparent 70%); }
-        .oracle-gem { width: 60px; height: 60px; background: var(--diamond); transform: rotate(45deg); box-shadow: 0 0 30px #fff; cursor: pointer; transition: 0.3s; animation: pulse 3s infinite; }
+        /* ホーム：ログインボーナスUI */
+        .bonus-container { width: 220px; height: 280px; display: flex; align-items: center; justify-content: center; position: relative; }
+        .oracle-gem { width: 60px; height: 60px; background: var(--diamond); transform: rotate(45deg); box-shadow: 0 0 30px #fff; cursor: pointer; transition: 0.5s; animation: pulse 3s infinite; }
+        .oracle-gem.collected { opacity: 0; pointer-events: none; transform: rotate(45deg) scale(0); }
         @keyframes pulse { 0% { transform: rotate(45deg) scale(1); } 50% { transform: rotate(45deg) scale(1.1); box-shadow: 0 0 50px #fff; } 100% { transform: rotate(45deg) scale(1); } }
         
-        .message-box { margin-top: 40px; width: 80%; min-height: 60px; }
-        #oracle-text { font-size: 13px; line-height: 1.8; color: var(--gold); text-shadow: 0 0 5px rgba(0,0,0,0.5); }
-
-        /* ASMRスイッチ */
-        .asmr-bar { position: absolute; top: 15px; right: 20px; display: flex; gap: 12px; }
-        .asmr-btn { font-size: 18px; opacity: 0.3; transition: 0.3s; cursor: pointer; }
-        .asmr-btn.on { opacity: 1; text-shadow: 0 0 10px var(--gold); }
+        #oracle-text { font-size: 13px; line-height: 1.8; color: var(--gold); padding: 0 30px; margin-top: 20px; min-height: 80px; }
 
         /* 対戦盤面 */
-        #board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; width: 85vw; max-width: 340px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; border: 1px solid rgba(212,175,55,0.2); }
-        .cell { aspect-ratio: 1; background: rgba(0,0,0,0.4); border-radius: 50%; border: 1px solid #222; display: flex; align-items: center; justify-content: center; transition: 0.4s; }
+        #board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; width: 85vw; max-width: 330px; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; border: 1px solid rgba(212,175,55,0.2); }
+        .cell { aspect-ratio: 1; background: rgba(0,0,0,0.6); border-radius: 50%; border: 1px solid #222; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
         .cell.P { background: var(--diamond); box-shadow: 0 0 15px #fff; border: none; }
         .cell.E { background: #1a1a1a; border: 2px solid #444; }
 
-        /* ナビゲーション */
-        #footer { position: fixed; bottom: 0; width: 100%; height: 85px; background: #0a0a0a; border-top: 1px solid #222; display: flex; justify-content: space-around; align-items: flex-end; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
-        .nav-item { color: #444; font-size: 9px; text-align: center; flex: 1; padding-bottom: 8px; }
+        /* 5タブ・フッターナビゲーション */
+        #footer { position: fixed; bottom: 0; width: 100%; height: 85px; background: #0a0a0a; border-top: 1px solid #222; display: flex; justify-content: space-around; align-items: center; padding-bottom: env(safe-area-inset-bottom); }
+        .nav-item { color: #444; font-size: 8px; text-align: center; flex: 1; transition: 0.3s; }
         .nav-item.active { color: var(--gold); }
-        .main-icon { width: 48px; height: 48px; background: #000; border: 1px solid var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; margin: 0 auto 5px; box-shadow: 0 0 10px rgba(212,175,55,0.2); }
+        .nav-icon { font-size: 20px; margin-bottom: 4px; display: block; }
+        .nav-item.active .nav-icon { transform: scale(1.1); text-shadow: 0 0 10px var(--gold); }
+        
+        .placeholder-text { color: #444; font-size: 12px; margin-top: 100px; font-style: italic; }
     </style>
 </head>
 <body>
 
-    <div class="asmr-bar">
-        <div class="asmr-btn" id="btn-rain" onclick="toggleASMR('rain')">☔</div>
-        <div class="asmr-btn" id="btn-ice" onclick="toggleASMR('ice')">🧊</div>
+    <!-- 各画面の定義 -->
+    <div id="mail-screen" class="screen">
+        <h2>MAIL</h2>
+        <p class="placeholder-text">未読のメッセージはありません</p>
     </div>
 
-    <!-- ホーム画面 (ATELIER) -->
-    <div id="home-screen" class="screen active">
-        <h2>ATELIER</h2>
-        <div class="main-display">
-            <div class="oracle-gem" onclick="drawOracle()"></div>
-        </div>
-        <div class="message-box">
-            <p id="oracle-text">宝石をタップして、<br>今日の導きを得てください</p>
-        </div>
-    </div>
-
-    <!-- バトル画面 (ENGAGEMENT) -->
     <div id="battle-screen" class="screen">
         <h2>ENGAGEMENT</h2>
         <div id="board"></div>
-        <p id="status" style="font-size:11px; margin-top:25px; color:var(--gold); opacity:0.6;">Your Turn</p>
+        <p style="font-size:11px; margin-top:20px; color:var(--gold); opacity:0.6;">Your Turn</p>
     </div>
 
+    <div id="home-screen" class="screen active">
+        <h2>HOME</h2>
+        <div class="bonus-container">
+            <div id="bonus-gem" class="oracle-gem" onclick="collectBonus()"></div>
+        </div>
+        <div id="oracle-text">
+            宝石をタップして<br>本日のログインボーナスを<br>受け取ってください
+        </div>
+    </div>
+
+    <div id="gacha-screen" class="screen">
+        <h2>GACHA</h2>
+        <p class="placeholder-text">準備中...</p>
+    </div>
+
+    <div id="atelier-screen" class="screen">
+        <h2>ATELIER</h2>
+        <p class="placeholder-text">あなたのコレクション</p>
+    </div>
+
+    <!-- 5タブ・ナビゲーション -->
     <div id="footer">
-        <div class="nav-item active" onclick="sw('home-screen',this)"><div class="main-icon">🏠</div>HOME</div>
-        <div class="nav-item" onclick="sw('battle-screen',this)"><div style="font-size:22px; margin-bottom:12px;">⚔️</div>BATTLE</div>
+        <div class="nav-item" onclick="sw('mail-screen',this)"><span class="nav-icon">✉️</span>メール</div>
+        <div class="nav-item" onclick="sw('battle-screen',this)"><span class="nav-icon">⚔️</span>対戦</div>
+        <div class="nav-item active" onclick="sw('home-screen',this)"><span class="nav-icon">🏠</span>ホーム</div>
+        <div class="nav-item" onclick="sw('gacha-screen',this)"><span class="nav-icon">💎</span>ガチャ</div>
+        <div class="nav-item" onclick="sw('atelier-screen',this)"><span class="nav-icon">⚒️</span>アトリエ</div>
     </div>
 
     <script>
-        const fortunes = [
-            "【ダイヤモンド】<br>不屈の精神が道を拓きます。今日の商談は自信を持って。",
-            "【ラピスラズリ】<br>直感が冴え渡る日。新しい投資先の検討に吉。",
-            "【アメジスト】<br>心の平穏が成功を呼びます。一歩引いて状況を観察して。",
-            "【ルビー】<br>情熱が周囲を動かします。サイドハイスルの好機です。",
-            "【エメラルド】<br>癒やしと成長の兆し。身体を動かし、英気を養いましょう。"
-        ];
-
-        function drawOracle() {
+        // ログインボーナスのロジック
+        function collectBonus() {
+            const gem = document.getElementById('bonus-gem');
             const text = document.getElementById('oracle-text');
-            text.style.opacity = 0;
-            setTimeout(() => {
-                text.innerHTML = fortunes[Math.floor(Math.random() * fortunes.length)];
-                text.style.opacity = 1;
-            }, 300);
+            
+            const rewards = [
+                "【ダイヤモンドの加護】<br>今日の商談に不屈の輝きを。",
+                "【ルビーの情熱】<br>投資の決断に勝機あり。",
+                "【サファイアの知性】<br>冷静な判断が資産を守ります。",
+                "【エメラルドの癒やし】<br>休息が次の大きな利益を生むでしょう。"
+            ];
+
+            gem.classList.add('collected');
+            text.innerHTML = rewards[Math.floor(Math.random() * rewards.length)] + "<br><br><span style='color:#555;'>本日のボーナス受取済</span>";
+            
+            // ローカルストレージに日付を保存すれば翌日まで消せますが、まずは「押したら消える」挙動を優先。
         }
 
-        function toggleASMR(type) {
-            document.querySelectorAll('.asmr-btn').forEach(b => b.classList.remove('on'));
-            document.getElementById('btn-' + type).classList.add('on');
-            // 音源の実装準備完了。現在は視覚的なフィードバックのみ。
-        }
-
-        let b = Array(25).fill("");
+        // 画面切り替えロジック
         function sw(id, el) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById(id).classList.add('active'); el.classList.add('active');
+            document.getElementById(id).classList.add('active'); 
+            el.classList.add('active');
         }
 
+        // 対戦ロジック（簡易版を維持）
+        let b = Array(25).fill("");
         function init() {
             const container = document.getElementById('board');
             for(let i=0; i<25; i++) {
                 let c = document.createElement('div'); c.className = 'cell';
-                c.onclick = () => tap(i);
+                c.onclick = () => { if(b[i]=="") { b[i]="P"; render(); setTimeout(enemy, 500); } };
                 container.appendChild(c);
             }
         }
-
-        function tap(i) {
-            if(b[i] !== "") return;
-            b[i] = "P"; flip(i, "P"); render();
-            setTimeout(enemy, 600);
-        }
-
-        function flip(idx, p) {
-            const opp = p === "P" ? "E" : "P";
-            const dirs = [-1, 1, -5, 5, -6, 6, -4, 4];
-            dirs.forEach(d => {
-                let cur = idx + d; let path = [];
-                while(cur >= 0 && cur < 25 && b[cur] === opp) {
-                    path.push(cur); cur += d;
-                    if(Math.abs((cur-d)%5 - cur%5) > 1) break;
-                }
-                if(cur >= 0 && cur < 25 && b[cur] === p) path.forEach(pi => b[pi] = p);
-            });
-        }
-
         function enemy() {
             let e = b.map((v,i)=>v===""?i:null).filter(v=>v!==null);
-            if(e.length) { 
-                let m = e[Math.floor(Math.random()*e.length)];
-                b[m]="E"; flip(m, "E"); render(); 
-            }
+            if(e.length) { b[e[Math.floor(Math.random()*e.length)]]="E"; render(); }
         }
-
         function render() {
             const cs = document.getElementsByClassName('cell');
             for(let i=0; i<25; i++) { cs[i].className = 'cell ' + b[i]; }

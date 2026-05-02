@@ -3,114 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Jewel Atelier - Executive -</title>
+    <title>Jewel Atelier - Card Engagement -</title>
     <style>
-        :root { --gold: #d4af37; --bg: #050505; --panel: #111; --diamond: #ffffff; --red: #ff3b30; }
+        :root { --gold: #d4af37; --bg: #050505; --card-p: #ffffff; --card-e: #1a1a1a; }
         * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
-        body { background: var(--bg); color: #e0e0e0; font-family: "Georgia", serif; margin: 0; overflow: hidden; height: 100vh; }
+        body { background: var(--bg); color: #e0e0e0; font-family: "serif"; margin: 0; overflow: hidden; height: 100vh; }
         
-        .screen { display: none; flex-direction: column; align-items: center; width: 100%; height: calc(100vh - 85px); padding-top: 20px; text-align: center; overflow-y: auto; }
+        .screen { display: none; flex-direction: column; align-items: center; width: 100%; height: calc(100vh - 85px); padding-top: 20px; }
         .active { display: flex; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        h2 { font-size: 14px; color: var(--gold); letter-spacing: 5px; margin-bottom: 20px; font-weight: normal; }
+        /* カード盤面 */
+        #board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; width: 95vw; max-width: 380px; padding: 10px; background: #111; border-radius: 4px; border: 1px solid var(--gold); }
+        .cell { aspect-ratio: 0.7; background: rgba(255,255,255,0.05); border: 1px solid #333; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: 0.3s; position: relative; }
+        
+        /* プレイヤーカード（今後イラスト挿入予定） */
+        .cell.P { background: #fff; border: 2px solid var(--gold); color: #000; font-size: 10px; font-weight: bold; }
+        .cell.P::before { content: "JEWEL"; position: absolute; top: 2px; font-size: 8px; }
 
-        /* モード選択ボタン */
-        .mode-btn { width: 85%; background: #111; border: 1px solid #333; color: var(--gold); padding: 18px; margin-bottom: 12px; border-radius: 8px; font-size: 13px; letter-spacing: 2px; transition: 0.3s; }
-        .mode-btn:active { background: #222; transform: scale(0.98); }
-        .mode-btn.lock { opacity: 0.5; color: #555; }
+        /* 敵カード */
+        .cell.E { background: #222; border: 2px solid #444; color: #fff; font-size: 10px; }
 
-        /* 対戦盤面 */
-        #game-container { display: none; flex-direction: column; align-items: center; width: 100%; }
-        #board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; width: 85vw; max-width: 330px; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; border: 1px solid rgba(212,175,55,0.2); }
-        .cell { aspect-ratio: 1; background: rgba(0,0,0,0.6); border-radius: 50%; border: 1px solid #222; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
-        .cell.P { background: var(--diamond); box-shadow: 0 0 15px #fff; border: none; }
-        .cell.E { background: #1a1a1a; border: 2px solid #444; }
+        /* 手札エリア（将来の拡張） */
+        #hand { width: 100%; height: 60px; display: flex; justify-content: center; gap: 10px; margin-top: 20px; }
+        .hand-card { width: 40px; height: 55px; background: var(--gold); border-radius: 4px; opacity: 0.8; }
 
-        /* リザルト表示 */
-        #result-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; flex-direction: column; align-items: center; justify-content: center; }
-        #result-text { font-size: 32px; letter-spacing: 10px; margin-bottom: 20px; }
+        #status-text { color: var(--gold); font-size: 12px; margin-top: 15px; letter-spacing: 2px; }
 
-        /* ナビゲーション */
-        #footer { position: fixed; bottom: 0; width: 100%; height: 85px; background: #0a0a0a; border-top: 1px solid #222; display: flex; justify-content: space-around; align-items: center; padding-bottom: env(safe-area-inset-bottom); }
-        .nav-item { color: #444; font-size: 8px; text-align: center; flex: 1; position: relative; }
+        /* 共通ボタン・ナビ */
+        .btn { background: #111; border: 1px solid var(--gold); color: var(--gold); padding: 10px 20px; border-radius: 4px; margin-top: 10px; }
+        #footer { position: fixed; bottom: 0; width: 100%; height: 85px; background: #000; border-top: 1px solid #222; display: flex; justify-content: space-around; align-items: center; padding-bottom: env(safe-area-inset-bottom); }
+        .nav-item { color: #444; font-size: 8px; text-align: center; flex: 1; }
         .nav-item.active { color: var(--gold); }
-        .nav-icon { font-size: 20px; margin-bottom: 4px; display: block; }
     </style>
 </head>
 <body>
 
-    <div id="mail-screen" class="screen">
-        <h2>MAIL</h2>
-        <div style="width:90%; padding:20px; border:1px solid #222; font-size:12px; color:#666;">新しいメールはありません</div>
-    </div>
-
-    <div id="battle-screen" class="screen">
-        <h2>ENGAGEMENT</h2>
-        <div id="mode-menu">
-            <button class="mode-btn" onclick="startBattle('campaign')">CAMPAIGN (Lv.<span id="camp-lv">1</span>)</button>
-            <button class="mode-btn" onclick="startBattle('cpu')">FREE CPU BATTLE</button>
-            <button class="mode-btn" onclick="alert('基本ルール：石を置いて相手を挟むと自分の色になります。')">TUTORIAL</button>
-            <button class="mode-btn lock">EVENT (COMING SOON)</button>
+    <div id="battle-screen" class="screen active">
+        <h2 style="font-size:12px; color:var(--gold);">5-IN-A-ROW BATTLE</h2>
+        <div id="board"></div>
+        <div id="status-text">Your Turn - 5つ並べろ</div>
+        <div id="hand">
+            <div class="hand-card"></div><div class="hand-card"></div><div class="hand-card"></div>
         </div>
-
-        <div id="game-container">
-            <div id="board"></div>
-            <p id="status-text" style="color:var(--gold); font-size:12px; margin-top:20px;">Your Turn</p>
-            <button class="mode-btn" style="margin-top:20px; width:100px; padding:10px;" onclick="exitBattle()">QUIT</button>
-        </div>
-    </div>
-
-    <div id="home-screen" class="screen active">
-        <h2>HOME</h2>
-        <div style="width:60px; height:60px; background:var(--diamond); transform:rotate(45deg); box-shadow:0 0 30px #fff; margin:100px auto 40px;" id="bonus-gem" onclick="this.style.display='none'"></div>
-        <p style="color:var(--gold); font-size:12px;">Welcome back, Director.</p>
-    </div>
-
-    <div id="gacha-screen" class="screen"><h2>GACHA</h2><p style="color:#333;">Analyzing market...</p></div>
-    <div id="atelier-screen" class="screen"><h2>ATELIER</h2><p style="color:#333;">Designing display...</p></div>
-
-    <div id="result-overlay" onclick="exitBattle()">
-        <div id="result-text"></div>
-        <p style="color:var(--gold); font-size:12px;">TAP TO RETURN</p>
+        <button class="btn" onclick="resetGame()">RESET</button>
     </div>
 
     <div id="footer">
-        <div class="nav-item" onclick="sw('mail-screen',this)"><span class="nav-icon">✉️</span>メール</div>
-        <div class="nav-item" onclick="sw('battle-screen',this)"><span class="nav-icon">⚔️</span>対戦</div>
-        <div class="nav-item active" onclick="sw('home-screen',this)"><span class="nav-icon">🏠</span>ホーム</div>
-        <div class="nav-item" onclick="sw('gacha-screen',this)"><span class="nav-icon">💎</span>ガチャ</div>
-        <div class="nav-item" onclick="sw('atelier-screen',this)"><span class="nav-icon">⚒️</span>アトリエ</div>
+        <div class="nav-item"><span>✉️</span><br>メール</div>
+        <div class="nav-item active"><span>⚔️</span><br>対戦</div>
+        <div class="nav-item"><span>🏠</span><br>ホーム</div>
+        <div class="nav-item"><span>💎</span><br>ガチャ</div>
+        <div class="nav-item"><span>⚒️</span><br>アトリエ</div>
     </div>
 
     <script>
         let boardData = Array(25).fill("");
-        let currentMode = "";
-        let campaignLevel = 1;
 
-        function sw(id, el) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById(id).classList.add('active'); 
-            el.classList.add('active');
-            if(id !== 'battle-screen') exitBattle();
-        }
-
-        function startBattle(mode) {
-            currentMode = mode;
-            document.getElementById('mode-menu').style.display = 'none';
-            document.getElementById('game-container').style.display = 'flex';
-            resetGame();
-        }
-
-        function exitBattle() {
-            document.getElementById('mode-menu').style.display = 'flex';
-            document.getElementById('game-container').style.display = 'none';
-            document.getElementById('result-overlay').style.display = 'none';
-        }
-
-        function resetGame() {
-            boardData.fill("");
+        function init() {
             const container = document.getElementById('board');
             container.innerHTML = "";
             for(let i=0; i<25; i++) {
@@ -123,8 +73,10 @@
 
         function playerMove(i) {
             if(boardData[i] !== "") return;
-            applyMove(i, "P");
-            if(checkFull()) return;
+            boardData[i] = "P";
+            render();
+            if(checkWin("P")) return;
+            
             document.getElementById('status-text').innerText = "CPU Thinking...";
             setTimeout(cpuMove, 600);
         }
@@ -132,56 +84,50 @@
         function cpuMove() {
             let empties = boardData.map((v, i) => v === "" ? i : null).filter(v => v !== null);
             if(empties.length) {
-                // キャンペーンLvに応じて少しだけ「隅」を狙うように調整
                 let move = empties[Math.floor(Math.random() * empties.length)];
-                if(campaignLevel > 1 && empties.includes(0)) move = 0; // 簡単な難易度上昇例
-                applyMove(move, "E");
+                boardData[move] = "E";
+                render();
+                if(checkWin("E")) return;
             }
-            checkFull();
             document.getElementById('status-text').innerText = "Your Turn";
-        }
-
-        function applyMove(idx, p) {
-            boardData[idx] = p;
-            const opp = p === "P" ? "E" : "P";
-            const dirs = [-1, 1, -5, 5, -6, 6, -4, 4];
-            dirs.forEach(d => {
-                let cur = idx + d; let path = [];
-                while(cur >= 0 && cur < 25 && boardData[cur] === opp) {
-                    path.push(cur); cur += d;
-                    if(Math.abs((cur-d)%5 - cur%5) > 1) break;
-                }
-                if(cur >= 0 && cur < 25 && boardData[cur] === p) path.forEach(pi => boardData[pi] = p);
-            });
-            render();
         }
 
         function render() {
             const cs = document.getElementsByClassName('cell');
-            for(let i=0; i<25; i++) { cs[i].className = 'cell ' + boardData[i]; }
+            for(let i=0; i<25; i++) {
+                cs[i].className = 'cell ' + boardData[i];
+                cs[i].innerText = boardData[i];
+            }
         }
 
-        function checkFull() {
-            if(!boardData.includes("")) {
-                let pCount = boardData.filter(v => v === "P").length;
-                let eCount = boardData.filter(v => v === "E").length;
-                showResult(pCount > eCount ? "VICTORY" : "DEFEAT");
-                if(pCount > eCount && currentMode === 'campaign') {
-                    campaignLevel++;
-                    document.getElementById('camp-lv').innerText = campaignLevel;
+        function checkWin(p) {
+            const lines = [];
+            // 横
+            for(let i=0; i<5; i++) lines.push([i*5, i*5+1, i*5+2, i*5+3, i*5+4]);
+            // 縦
+            for(let i=0; i<5; i++) lines.push([i, i+5, i+10, i+15, i+20]);
+            // 斜め
+            lines.push([0, 6, 12, 18, 24]);
+            lines.push([4, 8, 12, 16, 20]);
+
+            for(let line of lines) {
+                if(line.every(idx => boardData[idx] === p)) {
+                    alert(p === "P" ? "VICTORY!" : "DEFEAT...");
+                    resetGame();
+                    return true;
                 }
-                return true;
             }
+            if(!boardData.includes("")) { alert("DRAW"); resetGame(); return true; }
             return false;
         }
 
-        function showResult(text) {
-            const overlay = document.getElementById('result-overlay');
-            const resText = document.getElementById('result-text');
-            resText.innerText = text;
-            resText.style.color = text === "VICTORY" ? "#d4af37" : "#666";
-            overlay.style.display = 'flex';
+        function resetGame() {
+            boardData.fill("");
+            render();
+            document.getElementById('status-text').innerText = "Your Turn";
         }
+
+        init();
     </script>
 </body>
 </html>
